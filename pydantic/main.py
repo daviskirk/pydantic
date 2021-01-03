@@ -834,6 +834,10 @@ class BaseModel(Representation, metaclass=ModelMetaclass):
         exclude_none: bool = False,
     ) -> 'TupleGenerator':
 
+        if not exclude:
+            # fall back to exclude defined in field if exclude parameter is not given explicitely
+            exclude = {k: v.field_info.exclude for k, v in self.__fields__.items() if v.field_info.exclude} or None
+
         allowed_keys = self._calculate_keys(include=include, exclude=exclude, exclude_unset=exclude_unset)
         if allowed_keys is None and not (to_dict or by_alias or exclude_unset or exclude_defaults or exclude_none):
             # huge boost for plain _iter()

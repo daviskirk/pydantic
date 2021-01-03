@@ -68,7 +68,7 @@ if TYPE_CHECKING:
     from .error_wrappers import ErrorList
     from .main import BaseConfig, BaseModel  # noqa: F401
     from .types import ModelOrDc  # noqa: F401
-    from .typing import ReprArgs  # noqa: F401
+    from .typing import AbstractSetIntStr, MappingIntStrAny, ReprArgs  # noqa: F401
 
     ValidateReturn = Tuple[Optional[Any], Optional[ErrorList]]
     LocStr = Union[Tuple[Union[int, str], ...], str]
@@ -87,6 +87,7 @@ class FieldInfo(Representation):
         'alias_priority',
         'title',
         'description',
+        'exclude',
         'const',
         'gt',
         'ge',
@@ -123,6 +124,7 @@ class FieldInfo(Representation):
         self.alias_priority = kwargs.pop('alias_priority', 2 if self.alias else None)
         self.title = kwargs.pop('title', None)
         self.description = kwargs.pop('description', None)
+        self.exclude = kwargs.pop('exclude', None)
         self.const = kwargs.pop('const', None)
         self.gt = kwargs.pop('gt', None)
         self.ge = kwargs.pop('ge', None)
@@ -161,6 +163,7 @@ def Field(
     alias: str = None,
     title: str = None,
     description: str = None,
+    exclude: Union['AbstractSetIntStr', 'MappingIntStrAny', Any] = None,
     const: bool = None,
     gt: float = None,
     ge: float = None,
@@ -186,6 +189,8 @@ def Field(
     :param alias: the public name of the field
     :param title: can be any string, used in the schema
     :param description: can be any string, used in the schema
+    :param exclude: exclude this field while dumping.
+      Takes same values as the ``include`` and ``exclude`` arguments on the ``.dict`` method.
     :param const: this field is required and *must* take it's default value
     :param gt: only applies to numbers, requires the field to be "greater than". The schema
       will have an ``exclusiveMinimum`` validation keyword
@@ -213,6 +218,7 @@ def Field(
         alias=alias,
         title=title,
         description=description,
+        exclude=exclude,
         const=const,
         gt=gt,
         ge=ge,
