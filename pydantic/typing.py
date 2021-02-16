@@ -32,6 +32,19 @@ except ImportError:
     GenericAlias = ()
 
 
+# Python < 3.10 does not expose Ellipsis (...) as a type.
+# This hack was taken from gvanrossums's comment here:
+# https://github.com/python/typing/issues/684#issuecomment-548203158
+if TYPE_CHECKING:
+    from enum import Enum
+
+    class ellipsis(Enum):
+        Ellipsis = "..."
+
+    Ellipsis = ellipsis.Ellipsis
+else:
+    ellipsis = type(Ellipsis)
+
 if sys.version_info < (3, 7):
     if TYPE_CHECKING:
 

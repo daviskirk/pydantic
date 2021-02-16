@@ -1313,10 +1313,16 @@ def test_model_iteration():
         ),
         param(
             {'foos': {1, '__all__'}},
-            ValueError,
-            'set with keyword "__all__" must not contain other elements',
-            id='should fail using "__all__" in set together with other elements',
+            {'c': 3, 'foos': []},
+            None,
+            id='using "__all__" to exclude all list items, merged with others',
         ),
+        param(
+            {'foos': {0: {"a"}, -2: {"b"}}},
+            {'c': 3, 'foos': [{}, {"a": 3, "b": 4}]},
+            None,
+            id='using merged positive and negative indexes to exclude all list items',
+        )
     ],
 )
 def test_model_export_nested_list(exclude, expected, raises_match):

@@ -6,6 +6,7 @@ from enum import Enum
 from typing import Any, Dict, FrozenSet, Generic, List, Optional, Sequence, Set, Tuple, Type, TypeVar, Union
 
 import pytest
+from pytest import param
 
 from pydantic import (
     BaseModel,
@@ -531,57 +532,75 @@ def test_advanced_value_exclude_include():
     'exclude,expected',
     [
         # Normal nested __all__
-        (
+        param(
             {'subs': {'__all__': {'subsubs': {'__all__': {'i'}}}}},
             {'subs': [{'k': 1, 'subsubs': [{'j': 1}, {'j': 2}]}, {'k': 2, 'subsubs': [{'j': 3}]}]},
+            id="normal-nested-__all__",
         ),
         # Merge sub dicts
-        (
+        param(
             {'subs': {'__all__': {'subsubs': {'__all__': {'i'}}}, 0: {'subsubs': {'__all__': {'j'}}}}},
             {'subs': [{'k': 1, 'subsubs': [{}, {}]}, {'k': 2, 'subsubs': [{'j': 3}]}]},
+            id="merge-sub-dicts-1",
         ),
-        (
+        param(
             {'subs': {'__all__': {'subsubs': ...}, 0: {'subsubs': {'__all__': {'j'}}}}},
             {'subs': [{'k': 1, 'subsubs': [{'i': 1}, {'i': 2}]}, {'k': 2}]},
+            id="merge-sub-dicts-2",
         ),
-        (
+        param(
             {'subs': {'__all__': {'subsubs': {'__all__': {'j'}}}, 0: {'subsubs': ...}}},
             {'subs': [{'k': 1}, {'k': 2, 'subsubs': [{'i': 3}]}]},
+            id="merge-sub-dicts-3",
         ),
         # Merge sub sets
-        (
+        param(
             {'subs': {'__all__': {'subsubs': {0}}, 0: {'subsubs': {1}}}},
             {'subs': [{'k': 1, 'subsubs': []}, {'k': 2, 'subsubs': []}]},
+            id="merge-sub-sets",
         ),
         # Merge sub dict-set
-        (
+        param(
             {'subs': {'__all__': {'subsubs': {0: {'i'}}}, 0: {'subsubs': {1}}}},
             {'subs': [{'k': 1, 'subsubs': [{'j': 1}]}, {'k': 2, 'subsubs': [{'j': 3}]}]},
+            id="merge-sub-dict-set",
         ),
         # Different keys
-        ({'subs': {'__all__': {'subsubs'}, 0: {'k'}}}, {'subs': [{}, {'k': 2}]}),
-        ({'subs': {'__all__': {'subsubs': ...}, 0: {'k'}}}, {'subs': [{}, {'k': 2}]}),
-        ({'subs': {'__all__': {'subsubs'}, 0: {'k': ...}}}, {'subs': [{}, {'k': 2}]}),
+        param({'subs': {'__all__': {'subsubs'}, 0: {'k'}}}, {'subs': [{}, {'k': 2}]}, id='different-keys-1'),
+        param({'subs': {'__all__': {'subsubs': ...}, 0: {'k'}}}, {'subs': [{}, {'k': 2}]}, id='different-keys-2'),
+        param({'subs': {'__all__': {'subsubs'}, 0: {'k': ...}}}, {'subs': [{}, {'k': 2}]}, id='different-keys-3'),
         # Nested different keys
-        (
+        param(
             {'subs': {'__all__': {'subsubs': {'__all__': {'i'}, 0: {'j'}}}}},
             {'subs': [{'k': 1, 'subsubs': [{}, {'j': 2}]}, {'k': 2, 'subsubs': [{}]}]},
+            id='nested-different-keys-1',
         ),
-        (
+        param(
             {'subs': {'__all__': {'subsubs': {'__all__': {'i': ...}, 0: {'j'}}}}},
             {'subs': [{'k': 1, 'subsubs': [{}, {'j': 2}]}, {'k': 2, 'subsubs': [{}]}]},
+            id='nested-different-keys-2',
         ),
-        (
+        param(
             {'subs': {'__all__': {'subsubs': {'__all__': {'i'}, 0: {'j': ...}}}}},
             {'subs': [{'k': 1, 'subsubs': [{}, {'j': 2}]}, {'k': 2, 'subsubs': [{}]}]},
+            id='nested-different-keys-3',
         ),
         # Ignore __all__ for index with defined exclude
-        (
+        param(
             {'subs': {'__all__': {'subsubs'}, 0: {'subsubs': {'__all__': {'j'}}}}},
             {'subs': [{'k': 1, 'subsubs': [{'i': 1}, {'i': 2}]}, {'k': 2}]},
+            id='ignore-__all__-for-index-with-defined-exclude',
         ),
-        ({'subs': {'__all__': {'subsubs': {'__all__': {'j'}}}, 0: ...}}, {'subs': [{'k': 2, 'subsubs': [{'i': 3}]}]}),
-        ({'subs': {'__all__': ..., 0: {'subsubs'}}}, {'subs': [{'k': 1}]}),
+        param(
+            {'subs': {'__all__': {'subsubs': {'__all__': {'j'}}}, 0: ...}},
+            {'subs': [{'k': 2, 'subsubs': [{'i': 3}]}]},
+            id='ignore-__all__-for-index-with-defined-exclude-2',
+        ),
+        param(
+            {'subs': {'__all__': ..., 0: {'subsubs'}}},
+            {'subs': [{'k': 1}]},
+            id='ignore-__all__-for-index-with-defined-exclude-3',
+        ),
     ],
 )
 def test_advanced_exclude_nested_lists(exclude, expected):
